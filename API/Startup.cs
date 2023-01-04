@@ -22,9 +22,9 @@ namespace API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIv5", Version = "v1" });
             });
-            // add dbcontext service
             services.AddDbContext<StoreContext>(x =>
              x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddCors();
 
         }
 
@@ -41,6 +41,7 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://127.0.0.1:5173"));
 
             app.UseAuthorization();
 
