@@ -8,14 +8,19 @@ import "@fontsource/roboto/700.css";
 import "./app/layout/styles.css";
 import App from "./app/layout/App";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Router } from "react-router-dom";
+import { createBrowserHistory } from "history";
 
 const client = new QueryClient();
+export const history = createBrowserHistory();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
-      <App />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <Router history={history}>
+        <App />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </Router>
     </QueryClientProvider>
   </React.StrictMode>
 );

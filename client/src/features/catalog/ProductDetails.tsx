@@ -10,109 +10,87 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { useParams } from "react-router-dom";
-import NotFound from "../../errors/NotFound";
-import LoadingComponent from "../../layout/LoadingComponent";
-import { useAppDispatch, useAppSelector } from "../../store/configureStore";
-import { AddBasketItemAsync, RemoveBasketItemAsync } from "../basket/basketSlice";
-import { FetchSingleProductAsync, productSelectors } from "./catalogSlice";
+import { ProductModel } from "../../app/models/productModel";
 
 function ProductDetails() {
-  const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
-  const product = useAppSelector((state) => productSelectors.selectById(state, id));
-  const { productsStatus } = useAppSelector((state) => state.catalog);
-  const { basket, status } = useAppSelector((state) => state.basket);
-  const item = basket?.items.find((i) => i.productId === product?.id);
-  const [quantity, setQuantity] = useState(0);
-
-  useEffect(() => {
-    if (item) setQuantity(item.quantity);
-    if (!product) dispatch(FetchSingleProductAsync(id));
-  }, [id, item, dispatch, product]);
-
-  const handleChangeCart = (e: any) => {
-    if (e.target.value >= 0) {
-      setQuantity(e.target.value);
-    }
+  const fetchProduct = async (): Promise<ProductModel> => {
+    return await axios.get(`http://localhost:5000/api/Products/${id}`).then((res) => res.data);
+  };
+  const useProduct = () => {
+    return useQuery({
+      queryKey: ["products", id],
+      queryFn: fetchProduct,
+      staleTime: 1000 * 60 * 2,
+    });
   };
 
-  const handleSubmitCart = (e: any) => {
-    if (!item || quantity > item.quantity) {
-      const updatedQuantity = item ? quantity - item.quantity : quantity;
-      dispatch(AddBasketItemAsync({ productId: product?.id!, quantity: updatedQuantity }));
-    } else {
-      const updatedQuantity = item.quantity - quantity;
-      dispatch(RemoveBasketItemAsync({ productId: product?.id!, quantity: updatedQuantity }));
-    }
-  };
-
-  if (productsStatus === "pendingFetchingSingleProduct")
-    return <LoadingComponent message="Loading Product" />;
-  if (!product) return <NotFound />;
+  const product = useProduct();
+  if (product.isLoading) {
+    return <h3>loading...</h3>;
+  }
+  if (product.error instanceof Error) {
+    return <h3>{product.error.message}</h3>;
+  }
 
   return (
     <div>
       <Grid container spacing={6}>
         <Grid item xs={6}>
-          <img src={product.pictureUrl} alt={product.name} style={{ width: "100%" }} />
+          <img src={product.data?.pictureUrl} alt={product.data?.name} style={{ width: "100%" }} />
         </Grid>
         <Grid item xs={6}>
-          <Typography variant="h4">{product.name}</Typography>
+          <Typography variant="h4">{product.data?.name}</Typography>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="h5" color="secondary">
-            ${(product.price / 100).toFixed(2)}
+            ${(product.data?.price! / 100).toFixed(2)}
           </Typography>
           <TableContainer>
             <Table>
               <TableBody>
                 <TableRow>
                   <TableCell>Name</TableCell>
-                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.data?.name}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Description</TableCell>
-                  <TableCell>{product.description}</TableCell>
+                  <TableCell>{product.data?.description}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Type</TableCell>
-                  <TableCell>{product.type}</TableCell>
+                  <TableCell>{product.data?.type}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Brand</TableCell>
-                  <TableCell>{product.brand}</TableCell>
+                  <TableCell>{product.data?.brand}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Quantity in Stock</TableCell>
-                  <TableCell>{product.quantityInStock}</TableCell>
+                  <TableCell>{product.data?.quantityInStock}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
           <Grid container spacing={2} sx={{ mt: 2 }}>
             <Grid item xs={6}>
-              <TextField
-                variant="outlined"
-                type="number"
-                label="Quantity in Cart"
-                fullWidth
-                value={quantity}
-                onChange={handleChangeCart}
-              />
+              <TextField variant="outlined" type="number" label="Quantity in Cart" fullWidth />
             </Grid>
             <Grid item xs={6}>
               <LoadingButton
-                disabled={quantity === item?.quantity || (!item && quantity === 0)}
-                loading={status.includes("pending")}
-                onClick={handleSubmitCart}
+                // disabled={quantity === item?.quantity || (!item && quantity === 0)}
+                // loading={status.includes("pending")}
+                // onClick={handleSubmitCart}
                 sx={{ height: "55px" }}
                 color="primary"
                 size="large"
                 variant="contained"
                 fullWidth
               >
-                {item ? "Update Quantity" : "Add To Cart"}
+                {/* {item ? "Update Quantity" : "Add To Cart"} */}
+                "Update Quantity"
               </LoadingButton>
             </Grid>
           </Grid>
