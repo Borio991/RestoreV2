@@ -1,17 +1,11 @@
 import { ShoppingCart } from "@mui/icons-material";
-import {
-  AppBar,
-  Badge,
-  Box,
-  Container,
-  IconButton,
-  List,
-  ListItem,
-  Switch,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Badge, Box, Container, IconButton, List, ListItem, Switch, Toolbar, Typography } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 import { Link, NavLink } from "react-router-dom";
+import agent from "../api/agent";
+import { useBasketQuantity } from "../hooks/basketHooks";
+import { BasketModel } from "../models/BasketModel";
 import SignedInMenu from "./SignInMenu";
 
 interface Props {
@@ -32,6 +26,7 @@ const navStyles = {
 };
 
 function Navbar({ darkMode, handleChange }: Props) {
+  const basketNumber = useBasketQuantity();
   const midNavLinks = [
     { title: "Catalog", path: "/catalog" },
     { title: "About", path: "/about" },
@@ -60,7 +55,7 @@ function Navbar({ darkMode, handleChange }: Props) {
           </List>
           <Box display={"flex"}>
             <IconButton component={Link} to="/basket" size="large" color="inherit">
-              <Badge badgeContent={5} color="secondary">
+              <Badge badgeContent={basketNumber.data} color="secondary">
                 <ShoppingCart />
               </Badge>
             </IconButton>

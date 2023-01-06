@@ -14,7 +14,9 @@ import { createBrowserHistory } from "history";
 const client = new QueryClient();
 export const history = createBrowserHistory();
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+
+root.render(
   <React.StrictMode>
     <QueryClientProvider client={client}>
       <Router history={history}>

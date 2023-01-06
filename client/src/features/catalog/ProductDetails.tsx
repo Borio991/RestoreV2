@@ -1,34 +1,34 @@
 import { LoadingButton } from "@mui/lab";
-import {
-  Divider,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ProductModel } from "../../app/models/productModel";
+import { useAddBasketItem, useBasket, useRemoveBasketItem } from "../../app/hooks/basketHooks";
+import { useProduct } from "../../app/hooks/productHooks";
 
 function ProductDetails() {
   const { id } = useParams<{ id: string }>();
-  const fetchProduct = async (): Promise<ProductModel> => {
-    return await axios.get(`http://localhost:5000/api/Products/${id}`).then((res) => res.data);
-  };
-  const useProduct = () => {
-    return useQuery({
-      queryKey: ["products", id],
-      queryFn: fetchProduct,
-      staleTime: 1000 * 60 * 2,
-    });
-  };
 
-  const product = useProduct();
+  const product = useProduct(id);
+  const basket = useBasket();
+  const removeItemBasket = useRemoveBasketItem();
+  const AddItemBasket = useAddBasketItem();
+  const quantityInBasket = basket.data?.items.find((x) => x.productId === product.data?.id)?.quantity ?? 0;
+  const [quantity, setQuantity] = useState(0);
+
+  const existedItem = basket.data?.items.find((x) => x.productId === product.data?.id);
+  function updateItemQuantity() {
+    const existedItem = basket.data?.items.find((x) => x.productId === product.data?.id);
+    if (existedItem?.quantity! > quantity!) {
+      removeItemBasket.mutate({ id: existedItem?.productId!, quantity: existedItem?.quantity! - quantity! });
+    }
+    if (existedItem?.quantity! < quantity!) {
+      AddItemBasket.mutate({ id: existedItem?.productId!, quantity: quantity! - existedItem?.quantity! });
+    }
+  }
+
+  useEffect(() => {
+    setQuantity(quantityInBasket);
+  }, [quantityInBasket]);
   if (product.isLoading) {
     return <h3>loading...</h3>;
   }
@@ -76,21 +76,28 @@ function ProductDetails() {
           </TableContainer>
           <Grid container spacing={2} sx={{ mt: 2 }}>
             <Grid item xs={6}>
-              <TextField variant="outlined" type="number" label="Quantity in Cart" fullWidth />
+              <TextField
+                variant="outlined"
+                type="number"
+                label="Quantity in Cart"
+                fullWidth
+                // defaultValue={quantityInBasket}
+                value={quantity}
+                onChange={(e: any) => setQuantity(e.target.value)}
+              />
             </Grid>
             <Grid item xs={6}>
               <LoadingButton
-                // disabled={quantity === item?.quantity || (!item && quantity === 0)}
-                // loading={status.includes("pending")}
-                // onClick={handleSubmitCart}
+                disabled={quantity === existedItem?.quantity || (!existedItem && quantity === 0)}
+                loading={AddItemBasket.isLoading || removeItemBasket.isLoading}
+                onClick={updateItemQuantity}
                 sx={{ height: "55px" }}
                 color="primary"
                 size="large"
                 variant="contained"
                 fullWidth
               >
-                {/* {item ? "Update Quantity" : "Add To Cart"} */}
-                "Update Quantity"
+                {existedItem ? "Update Quantity" : "Add To Cart"}
               </LoadingButton>
             </Grid>
           </Grid>

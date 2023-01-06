@@ -1,10 +1,6 @@
 import { Grid, Paper } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { ProductModel } from "../../app/models/productModel";
-
+import { useProducts } from "../../app/hooks/productHooks";
 import ProductList from "./ProductList";
-import SearchProduct from "./SearchProduct";
 
 const sortOptions = [
   { value: "name", label: "Alphabetical" },
@@ -13,17 +9,6 @@ const sortOptions = [
 ];
 
 function Catalog(): JSX.Element {
-  const fetchProducts = async (): Promise<ProductModel[]> => {
-    return await axios.get("http://localhost:5000/api/Products").then((res) => res.data);
-  };
-  const useProducts = () => {
-    return useQuery({
-      queryKey: ["products"],
-      queryFn: fetchProducts,
-      staleTime: 1000 * 60 * 2, // 2min
-    });
-  };
-
   const products = useProducts();
   if (products.isLoading) {
     return <h3>loading...</h3>;
@@ -68,11 +53,7 @@ function Catalog(): JSX.Element {
         <ProductList products={products.data} productsLoading={products.isLoading} />
       </Grid>
       <Grid item xs={3}></Grid>
-      <Grid
-        item
-        xs={9}
-        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-      ></Grid>
+      <Grid item xs={9} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}></Grid>
     </Grid>
   );
 }

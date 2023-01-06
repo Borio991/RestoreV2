@@ -1,10 +1,14 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
-import { history } from "../../main";
+import { history } from "../..";
+import { BasketModel } from "../models/BasketModel";
+import { ProductModel } from "../models/productModel";
 
-const sleep = () => new Promise((resolve) => setTimeout(resolve, 500));
+const sleep = () => new Promise((resolve) => setTimeout(resolve, 300));
 
 axios.defaults.baseURL = "http://localhost:5000/api/";
+
+axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
 
@@ -53,8 +57,14 @@ const requests = {
 };
 
 const Catalog = {
-  list: () => requests.get("products"),
-  details: (id: number) => requests.get(`products/${id}`),
+  list: (): Promise<ProductModel[]> => requests.get("products"),
+  details: (id: string): Promise<ProductModel> => requests.get(`products/${id}`),
+};
+
+const Basket = {
+  get: (): Promise<BasketModel> => requests.get("basket"),
+  addItem: (productId: string, quantity = 1) => requests.post(`basket?productId=${productId}&quantity=${quantity}`, {}),
+  removeItem: (productId: string, quantity = 1) => requests.delete(`basket?productId=${productId}&quantity=${quantity}`),
 };
 
 const TestErrors = {
@@ -68,6 +78,7 @@ const TestErrors = {
 const agent = {
   Catalog,
   TestErrors,
+  Basket,
 };
 
 export default agent;
