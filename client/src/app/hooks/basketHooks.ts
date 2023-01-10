@@ -10,7 +10,7 @@ export const useBasket = () => {
   });
 };
 
-interface item {
+export interface item {
   id: string;
   quantity?: number;
 }

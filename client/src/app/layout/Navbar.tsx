@@ -1,7 +1,6 @@
 import { ShoppingCart } from "@mui/icons-material";
 import { AppBar, Badge, Box, Container, IconButton, List, ListItem, Switch, Toolbar, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import agent from "../api/agent";
 import { useBasketQuantity } from "../hooks/basketHooks";

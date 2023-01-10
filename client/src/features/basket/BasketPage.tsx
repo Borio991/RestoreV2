@@ -2,9 +2,11 @@ import { Add, Delete, Remove } from "@mui/icons-material";
 import { LoadingButton } from "@mui/lab";
 import { Button, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAddBasketItem, useBasket, useBasketSubtotal, useRemoveBasketItem } from "../../app/hooks/basketHooks";
 import LoadingComponent from "../../app/layout/LoadingComponent";
+import { BasketItemModel } from "../../app/models/BasketModel";
 import BasketSummary from "./BasketSummery";
 
 export default function BasketPage() {
@@ -12,6 +14,21 @@ export default function BasketPage() {
   const addItemBasket = useAddBasketItem();
   const removeItemBasket = useRemoveBasketItem();
   const basketSubtotal = useBasketSubtotal();
+  const [name, setname] = useState("");
+
+  function handleAddItemBasket(item: BasketItemModel, name: string) {
+    addItemBasket.mutate({ id: item.productId });
+    setname(name);
+  }
+
+  function handleRemoveItemBasket(item: BasketItemModel, name: string) {
+    removeItemBasket.mutate({ id: item.productId });
+    setname(name);
+  }
+  function handleDeleteItemBasket(item: BasketItemModel, name: string) {
+    removeItemBasket.mutate({ id: item.productId, quantity: item.quantity });
+    setname(name);
+  }
 
   if (basket.isLoading) return <LoadingComponent message="loading basket" />;
   if (basket.error instanceof Error) return <h2>{basket.error.message}</h2>;
@@ -43,13 +60,17 @@ export default function BasketPage() {
                 </TableCell>
                 <TableCell align="right">${(item.price / 100).toFixed(2)}</TableCell>
                 <TableCell align="center">
-                  <LoadingButton loading={false} onClick={() => removeItemBasket.mutate({ id: item.productId })} color="error">
+                  <LoadingButton
+                    loading={removeItemBasket.isLoading && name === "rem" + item.productId}
+                    onClick={() => handleRemoveItemBasket(item, "rem" + item.productId)}
+                    color="error"
+                  >
                     <Remove />
                   </LoadingButton>
                   {item.quantity}
                   <LoadingButton
-                    loading={addItemBasket.isLoading}
-                    onClick={() => addItemBasket.mutate({ id: item.productId })}
+                    loading={addItemBasket.isLoading && name === "add" + item.productId}
+                    onClick={() => handleAddItemBasket(item, "add" + item.productId)}
                     color="secondary"
                   >
                     <Add />
@@ -58,8 +79,8 @@ export default function BasketPage() {
                 <TableCell align="right">${((item.price / 100) * item.quantity).toFixed(2)}</TableCell>
                 <TableCell align="right">
                   <LoadingButton
-                    // loading={status.loading && status.name === "del" + item.productId}
-                    onClick={() => removeItemBasket.mutate({ id: item.productId, quantity: item.quantity })}
+                    loading={removeItemBasket.isLoading && name === "del" + item.productId}
+                    onClick={() => handleDeleteItemBasket(item, "del" + item.productId)}
                     color="error"
                   >
                     <Delete />
